@@ -193,11 +193,11 @@ More resulting field enumeration can be done, but no other fields are returned. 
 
 ![](xpatherror.png)
 
-From here, an assumption can be made that the XPath query is using the `username` argument in the query predicate to filter results. So, a simple '1'='1' payload can test to see if the server is vulnerable to Blind XPath Injection. In this case, that would only be possible if the server is executing queries despite returning an authentication-required message.
+An assumption can be made that the XPath query is using the `username` argument in the query predicate to filter results. So, a simple '1'='1' payload can test to see if the server is vulnerable to Blind XPath Injection. In this case, that would only be possible if the server is executing queries despite returning an authentication-required message.
 
 ![](blindxpath.png)
 
-Boom! This web application is really insecure, and the value of `ok` is true if the XPath query succeeds and results in a value of true. This means that the server is not doing any input filtering and is not correctly configured to send a blanket `False` response when no token is given. After verifying the Blind XPath Injection, a combination of the following XPath query functionality can be used to extract the entire XML document: `name(), substring(), string-length(), and count()`. More details on Blind XPath Injection can be found elsewhere but it's the exact same principle as a Blind SQL Injection. For this PoC, I used an automatic Blind XPath exfiltration tool called xcat, while providing a few application-specific arguments. The details of the script can be found within the comments.
+Boom! This web application is really insecure, and the value of `ok` is true if the XPath query succeeds and results in a value of true. This means that the server is not doing any input filtering and is not correctly configured to send a blanket `false` response when no token is given. After verifying the Blind XPath Injection, a combination of the following XPath query functionality can be used to extract the entire XML document: `name(), substring(), string-length(), and count()`. More details on Blind XPath Injection can be found elsewhere but it's the exact same principle as a Blind SQL Injection. For this PoC, I used an automatic Blind XPath exfiltration tool called xcat, while providing a few application-specific arguments. The details of the script can be found within the comments.
 
 ```
 import asyncio
@@ -265,7 +265,7 @@ Trying to use the `Upload MOTD` button results in failure. Users can attribute t
 
 ![](motdrequest.png)
 
-A classic LFI payload list such as LFI-Jhaddix.txt found in SecLists can be used to test for any working inclusion. Filtering out the default response size, the smallest payload able to successfully include /etc/passwd is `....//....//....//....//....//etc/passwd`. The use of double `..` and `//` is because the server is not recursively removing the `../` string to prevent LFI. It is only removing `../` in one pass which means LFI is still possible.
+A classic LFI payload list such as LFI-Jhaddix.txt found in SecLists can be used to test for any working inclusion. Filtering out the default response size, the smallest payload able to successfully include /etc/passwd is `....//....//....//....//....//etc/passwd`. The use of double `..` and `/` is because the server is not recursively removing the `../` string to prevent LFI. It is only removing `../` in one pass which means LFI is still possible.
 
 ```
 ┌──(kali㉿kali)-[~/tools]
