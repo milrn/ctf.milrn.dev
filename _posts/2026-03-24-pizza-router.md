@@ -170,7 +170,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 If we align heap_idx so that it starts the write exactly at the start of the ORD array, we will overwrite the (\*uint) dst_x field (last 4 bytes of the write) with the new_cost value that we fully control. But what do we set new_cost to? Well we want this expression: order->dst_y * G.width + order->dst_x to evaluate to the 4 least significant bytes of the win address. So, let's recall basic algebra and solve for the value of dst_x. Assuming we use *add_order 1 1* as our first order. The value of dst_y will be 1 (unchanged) and the value of G.width will be 16 which is the default width because the program loads the city1 map by default. The 32 least significant bits for the win() address will be calculated at runtime using the PIE base. It's important to note, when entering the new_cost value, it is read as a *signed* integer, which means it can be negative, and it will be converted to the appropriate *unsigned* integer on implicit cast into the dst_x field.
 
-dst_x = s32(32_lsb_win - 16)
+`dst_x = s32(32_lsb_win - 16)`
 
 Now that we have the new_cost value to set, to overwrite dst_x with, all we need is the value of heap_idx that aligns with the start of the ORD array. We can use similar algebra like before to solve this.
 
@@ -190,19 +190,19 @@ As shown in this code snippet, we are accessing the value 8 bytes from the start
 0x555977300bd0: 0x00000011      0x00000007      0x000000b1      0x00000003
 ```
 
-hex(0x555977300ba8 - 0x555977300b90) = 0x18
+`hex(0x555977300ba8 - 0x555977300b90) = 0x18`
 
 So, the following equation is obtained:
 
-start_of_heap_entries_list + (heap_idx * 8) = ORD_addr
+`start_of_heap_entries_list + (heap_idx * 8) = ORD_addr`
 
 or in terms of what we have (heap_leak is the start of order's heap structure):
 
-(heap_leak + 0x18) + (heap_idx * 8) = PIE_base + 20608
+`(heap_leak + 0x18) + (heap_idx * 8) = PIE_base + 20608`
 
 or:
 
-heap_idx = s32(((PIE_base + 20608) - (heap_leak + 0x18)) // 8)
+`heap_idx = s32(((PIE_base + 20608) - (heap_leak + 0x18)) // 8)`
 
 The integer division (//) is important here because we can't have a decimal index.
 
@@ -223,11 +223,11 @@ reroute 0 <calculated_heap_idx> <calculated_new_cost>
 
 After this chain executes, we can perform another reroute operation. This time the first 4 bytes written are the 4 least significant bytes of win() (due to our dst_x overwrite), and we control the last 4 bytes using new_cost directly and make them the 4 most significant bytes of win(). For this second reroute, the heap_idx should redirect the write to the offset of the fx_finish_dummy() function that we talked about at the very beginning, which has an offset of 0x430 from the heap leak. We can solve the exact same algebra as we solved for the last write with this new destination value.
 
-(heap_leak + 0x18) + (heap_idx * 8) = (heap_leak + 0x430)
+`(heap_leak + 0x18) + (heap_idx * 8) = (heap_leak + 0x430)`
 
 or:
 
-heap_idx = s32(((heap_leak + 0x430) - (heap_leak + 0x18)) // 8)
+`heap_idx = s32(((heap_leak + 0x430) - (heap_leak + 0x18)) // 8)`
 
 So, the final chain would be something like this:
 
