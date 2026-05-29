@@ -127,7 +127,7 @@ ValueError: bytes must be in range(0, 256)
 [*] Stopped process '/home/kali/BKCTF/cult-classic/cult_classic' (pid 507217)
 ```
 
-Since we are morphing each byte, some are going out of the valid byte range of 0-256. 
+Since we are morphing each byte, some are going out of the valid byte range of 0-255. 
 
 How can this be accounted for?
 
