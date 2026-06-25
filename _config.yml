@@ -18,7 +18,7 @@ title: milrn # the main title
 
 tagline: |
   CTF Writeups and Exploitation Notes
-  <img src="https://komarev.com/ghpvc/?username=milrn&label=SITE+VISITS" alt="">
+  <img src="https://komarev.com/ghpvc/?username=milrn&label=SITE+VISITS" alt=""> 
 
 description: >- # used by seo meta and the atom feed
   CTF Writeups and Exploitation Notes from @milrn
