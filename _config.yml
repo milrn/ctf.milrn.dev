@@ -16,7 +16,9 @@ timezone: America/New_York
 
 title: milrn # the main title
 
-tagline: CTF Writeups and Exploitation Notes # it will display as the subtitle
+tagline: |
+  CTF Writeups and Exploitation Notes
+  <img src="https://komarev.com/ghpvc/?username=milrn&label=SITE+VISITS" alt="">
 
 description: >- # used by seo meta and the atom feed
   CTF Writeups and Exploitation Notes from @milrn
