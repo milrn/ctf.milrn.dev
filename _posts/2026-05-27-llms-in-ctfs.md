@@ -24,7 +24,7 @@ That being said, the rise of AI in CTFs is a detriment to the fun and learning p
 
 Ohhh boy... The CTF community definitely has some toxicity issues because of the rise of AI, which I have witnessed first hand. People seem to tell themselves that anyone who is using AI is unskilled, which in most cases is frankly untrue. I know some of the best players use AI, people I look up to. In my opinion, everyone should remember, CTFs are games, just that. Attacking other people for using AI is just not necessary or warranted, unless it is directly against the rules of a certain CTF. We are all working together in the cybersecurity community to keep people safer and educate others on the importance of security. I get that it can be pretty annoying to see teams who might be less skilled than others at the top of the CTFtime leaderboards, but that's just a product of the current CTF landscape. Not to mention, CTFtime rankings more accurately tell people how active a CTF team is rather than how skilled a CTF team is.
 
-The people that really need to reflect are the ones who publicly attack others using AI, but then go back and use it themselves whenever they deem fit. Yes, maybe you never wanted to use AI and are only using it because others are using it, but that's just what the landscape is right now. Constantly berating others about it is not going to help anything; instead, helping to figure out how CTFs can evolve to naturally make these teams less successful and keep the game fun is a much better use of time. 
+That being said, if you are using AI, please don't larp online claiming to be one of the most skilled CTF teams. That also has very negative effects in the community.
 
 # Banning AI
 
